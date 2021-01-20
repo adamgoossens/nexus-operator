@@ -35,3 +35,5 @@
       _nexus_memory_limit: "{{ nexus.resources.memory.limit | default('3Gi') }}"
       _nexus_cpu_request: "{{ nexus.resources.cpu.request | default(1) }}"
       _nexus_cpu_limit: "{{ nexus.resources.cpu.limit | default(4) }}"
+
+      _nexus_truststore_configmap: "{{ nexus.truststore_configmap | default('') }}"

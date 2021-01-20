@@ -50,6 +50,14 @@ spec:
                 description: Defines the desired state of the Nexus Deployment
                 type: object
                 properties:
+                  truststore_configmap:
+                    description: |
+                      Specifies the name of a ConfigMap that holds a Java key store containing 
+                      Certificate Authority public keys. The trust store must have no password. 
+                      The ConfigMap should have a single key, truststore, containing the key store.
+                    type: string
+                    default: ''
+
                   allowAnonymousAccess:
                     description: |
                       Defines whether your Nexus instance should allow anonymous access

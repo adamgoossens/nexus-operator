@@ -91,6 +91,10 @@ spec:
           mountPath: /nexus-data
         - name: nexus-config
           mountPath: /opt/nexus/config
+{% if _nexus_truststore_configmap != '' %}
+        - name: nexus-truststore
+          mountPath: /etc/pki/java
+{% endif %}
       volumes:
       - name: nexus-config
         configMap:
@@ -101,4 +105,14 @@ spec:
           claimName: "{{ _nexus_name }}-pvc"
 {% else %}
         emptyDir: {}
+{% endif %}
+{% if _nexus_truststore_configmap != '' %}
+      - name: nexus-truststore
+        projected:
+          sources:
+          - configMap:
+              name: {{ _nexus_truststore_configmap }}
+              items:
+                - key: truststore
+                  path: cacerts
 {% endif %}
