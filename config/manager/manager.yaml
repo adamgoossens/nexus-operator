@@ -29,6 +29,12 @@ spec:
         - "--leader-election-id=nexus-operator"
         image: controller:latest
         env:
+        - name: RELATED_IMAGE_NEXUS_UBI
+          value: registry.access.redhat.com/ubi8/ubi-minimal:latest
+        - name: RELATED_IMAGE_OAUTH_PROXY
+          value: docker.io/openshift/oauth-proxy:latest
+        - name: RELATED_IMAGE_NEXUS_SERVER
+          value: docker.io/sonatype/nexus3:latest
         - name: ANSIBLE_GATHERING
           value: explicit
         - name: WATCH_NAMESPACE

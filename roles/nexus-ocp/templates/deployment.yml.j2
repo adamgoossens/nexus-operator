@@ -21,7 +21,7 @@ spec:
       serviceAccountName: "{{ _nexus_name }}"
       initContainers:
       - name: init
-        image: registry.access.redhat.com/ubi8/ubi-minimal
+        image: "{{ _nexus_ubi_imageref }}"
         command:
           - bash
           - -c
@@ -32,7 +32,7 @@ spec:
       containers:
 {% if _nexus_oauth|bool %}
       - name: oauth-proxy
-        image: 'openshift/oauth-proxy:latest'
+        image: "{{ _nexus_oauth_proxy_imageref }}"
         args:
           - '--https-address='
           - '--http-address=:4180'
@@ -50,7 +50,7 @@ spec:
         imagePullPolicy: {{ _nexus_image_pull_policy }}
 {% endif %}
       - name: nexus-server
-        image: "{{ _nexus_image }}:{{ _nexus_image_tag }}"
+        image: "{{ _nexus_server_imageref }}"
         imagePullPolicy: {{ _nexus_image_pull_policy }}
         ports:
         - containerPort: 8081

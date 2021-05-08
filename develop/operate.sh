@@ -107,7 +107,8 @@ function print_usage() {
          "[(-C |--channels=)CHANNELS] " \
          "[(-t |--extra-tag=)TAG] " \
          "[--develop] " \
-         "[--bundle]"
+         "[--bundle-generate]" \
+         "[--bundle-publish]"
 }
 
 function print_help() {
@@ -158,10 +159,12 @@ OPTIONS
     --develop                       Don't push to the SEMVER tag, either from
                                       operate.conf or the --version option, and
                                       instead push only to the develop tag
-    --bundle                        Build and publish an OLM bundle to the tag
+    --bundle-publish                Must be run following --bundle-generate. Build 
+                                      and publish an OLM bundle to the tag
                                       at ${IMG}-bundle:${VERSION}
+    --bundle-generate               Generate the bundle manifests
 
-NOTE: If you run with `--push-images` and `--bundle`, no installation will be
+NOTE: If you run with `--push-images`, `--bundle-generate` and `--bundle-publish`, no installation will be
       attempted as this combination is intended for CI. Other options will still
       be processed.
 
@@ -199,7 +202,8 @@ OVERLAY=default
 VERSION=
 CHANNELS=
 DEVLEOP=
-BUNDLE=
+BUNDLE_GENERATE=
+BUNDLE_PUBLISH=
 EXTRA_TAGS=()
 
 # Load the configuration
@@ -280,8 +284,11 @@ while [ $# -gt 0 ]; do
         --develop)
             DEVELOP=true
             ;;
-        --bundle)
-            BUNDLE=true
+        --bundle-generate)
+            BUNDLE_GENERATE=true
+            ;;
+        --bundle-publish)
+            BUNDLE_PUBLISH=true
             ;;
         *)
             print_usage >&2
@@ -426,7 +433,7 @@ function unkustomize_namespace() {
     popd &>/dev/null
 }
 
-function publish_bundle() {
+function generate_bundle() {
     update_components || return 1
     validate_kustomize || return 1
     quay_login || return 1
@@ -436,6 +443,10 @@ function publish_bundle() {
     error_run "Adding namespaced RoleBinding to kustomization" 'kustomize edit add resource namespaced/role_binding.yaml' || return 1
     popd &>/dev/null
     error_run "Building bundle manifests" 'kustomize build --load-restrictor LoadRestrictionsNone config/manifests | operator-sdk generate bundle --overwrite --version $VERSION --channels "$CHANNELS"' || return 1
+    error_run "Validating bundle" operator-sdk bundle validate ./bundle || return 1
+}
+
+function publish_bundle() {
     error_run "Validating bundle" operator-sdk bundle validate ./bundle || return 1
     error_run "Building bundle image" docker build -f bundle.Dockerfile -t "$IMG-bundle:$VERSION" . || return 1
     if [ -z "$DEVELOP" ]; then
@@ -493,7 +504,11 @@ else
         undeploy_cr
     fi
 
-    if [ "$BUNDLE" ]; then
+    if [ "$BUNDLE_GENERATE" ]; then
+        generate_bundle
+    fi
+
+    if [ "$BUNDLE_PUBLISH" ]; then
         publish_bundle
     fi
 fi

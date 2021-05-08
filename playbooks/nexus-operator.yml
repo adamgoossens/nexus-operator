@@ -12,6 +12,10 @@
     include_role:
       name: ./roles/nexus-ocp
     vars:
+      _nexus_server_imageref: "{{ lookup('env', 'RELATED_IMAGE_NEXUS_SERVER') }}"
+      _nexus_ubi_imageref: "{{ lookup('env', 'RELATED_IMAGE_NEXUS_UBI') }}"
+      _nexus_oauth_proxy_imageref: "{{ lookup('env', 'RELATED_IMAGE_OAUTH_PROXY') }}"
+
       _nexus_namespace: "{{ ansible_operator_meta.namespace }}"
       _nexus_name: "{{ nexus_service_name | default(ansible_operator_meta.name) }}"
 
